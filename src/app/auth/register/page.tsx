@@ -1,13 +1,23 @@
 "use client";
+import Link from "next/link";
 import React, { useState } from "react";
-import Input from "../../components/Input";
+import Image from "next/image";
+import Input from "@/components/Input";
+import Button from "@/components/Button";
+import Toast from "@/components/Toast";
 
 const Register = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    confirmPassword: "",
     role: "acheteur",
   });
+
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -16,15 +26,37 @@ const Register = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Données du formulaire :", formData);
+
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
+      setToast({ message: "Tous les champs sont requis", type: "error" });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setToast({ message: "Les mots de passe ne correspondent pas", type: "error" });
+      return;
+    }
+
+    setToast({ message: "Inscription réussie 🎉", type: "success" });
   };
 
   return (
     <div style={styles.pageContainer}>
       <div style={styles.card}>
+        <div style={styles.logoContainer}>
+          <Image
+            src="/Nolyo.png"
+            alt="Nolyo logo"
+            width={200}
+            height={90}
+            style={{ marginBottom: "10px" }}
+          />
+        </div>
+
         <h1 style={styles.title}>Créer un compte</h1>
+        <p style={styles.subtitle}>Rejoignez la communauté Nolyo</p>
+
         <form onSubmit={handleSubmit} style={styles.form}>
-          {/* Adresse email */}
           <Input
             type="email"
             name="email"
@@ -35,7 +67,6 @@ const Register = () => {
             required
           />
 
-          {/* Mot de passe */}
           <Input
             type="password"
             name="password"
@@ -46,7 +77,16 @@ const Register = () => {
             required
           />
 
-          {/* Rôle */}
+          <Input
+            type="password"
+            name="confirmPassword"
+            label="Confirmer le mot de passe"
+            placeholder="••••••••"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+          />
+
           <div style={styles.roleContainer}>
             <span style={styles.roleLabel}>Votre rôle</span>
             <div style={styles.radioGroup}>
@@ -73,77 +113,104 @@ const Register = () => {
               </label>
             </div>
           </div>
-
-          {/* Bouton */}
-          <button type="submit" style={styles.button}>
-            Créer un compte
-          </button>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+        <Button
+            type="submit"
+            label="Créer un compte"
+            classNames={["btn_primary", "btn_medium"]}
+          />
+        </div>
+          
         </form>
+
+        <p style={styles.footerText}>
+          Déjà inscrit ? <Link href="/login" style={styles.link}>Se connecter</Link>
+        </p>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };
 
-// ---------- STYLES ----------
-const styles = {
+import { CSSProperties } from "react";
+
+const styles: { [key: string]: CSSProperties } = {
   pageContainer: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
-    backgroundColor: "#fff",
+    backgroundColor: "#f9f9f9",
+    position: "relative",
   },
   card: {
-    width: "380px",
-    backgroundColor: "#ffffff",
-    borderRadius: "15px",
-    padding: "30px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-    border: "1px solid #eaeaea",
+    width: "100%",
+    maxWidth: "400px",
+    padding: "20px",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    backgroundColor: "#fff",
+    textAlign: "center",
+  },
+  logoContainer: {
+    marginBottom: "20px",
   },
   title: {
-    fontSize: "24px",
-    fontWeight: "700",
-    marginBottom: "25px",
-    textAlign: "left" as const,
+    fontSize: "20px",
+    fontWeight: "bold",
+    marginBottom: "10px",
+    color: "#333",
+  },
+  subtitle: {
+    fontSize: "14px",
+    marginBottom: "20px",
+    color: "#666",
   },
   form: {
     display: "flex",
-    flexDirection: "column" as const,
-    gap: "20px",
+    flexDirection: "column",
+    gap: "15px",
   },
   roleContainer: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "8px",
+    marginTop: "15px",
+    textAlign: "left",
   },
   roleLabel: {
-    fontWeight: "500",
+    fontSize: "14px",
+    fontWeight: "bold",
+    marginBottom: "5px",
+    display: "flex",
+    justifyContent: "center",
   },
   radioGroup: {
     display: "flex",
-    gap: "20px",
+    gap: "10px",
+    justifyContent: "center",
   },
   radioLabel: {
     display: "flex",
     alignItems: "center",
-    gap: "6px",
-    cursor: "pointer",
+    gap: "5px",
   },
   radioText: {
-    fontSize: "15px",
+    fontSize: "14px",
+    color: "#333",
   },
-  button: {
-    marginTop: "10px",
-    width: "100%",
-    padding: "12px 0",
-    borderRadius: "8px",
-    border: "none",
-    backgroundColor: "#007BFF",
-    color: "#ffffff",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "pointer",
+  footerText: {
+    marginTop: "15px",
+    fontSize: "14px",
+    color: "#666",
+  },
+  link: {
+    color: "#0070f3",
+    textDecoration: "none",
   },
 };
 
