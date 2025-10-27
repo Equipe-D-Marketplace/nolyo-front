@@ -5,6 +5,7 @@ import Image from "next/image";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Toast from "@/components/Toast";
+import api from "../../lib/api_client";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,17 +15,15 @@ const Register = () => {
     role: "acheteur",
   });
 
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error" | "info";
-  } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password || !formData.confirmPassword) {
@@ -37,52 +36,45 @@ const Register = () => {
       return;
     }
 
-    setToast({ message: "Inscription réussie 🎉", type: "success" });
+    try {
+      setLoading(true);
+
+      const response = await api.post("/auth/register", {
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      });
+
+      setToast({ message: "Inscription réussie 🎉", type: "success" });
+
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1200);
+    } catch (error: any) {
+      const msg = error.response?.data?.message || "Erreur lors de l’inscription";
+      setToast({ message: msg, type: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={styles.pageContainer}>
       <div style={styles.card}>
         <div style={styles.logoContainer}>
-          <Image
-            src="/Nolyo.png"
-            alt="Nolyo logo"
-            width={200}
-            height={90}
-            style={{ marginBottom: "10px" }}
-          />
+          <Image src="/Nolyo.png" alt="Nolyo logo" width={200} height={90} />
         </div>
 
         <h1 style={styles.title}>Créer un compte</h1>
         <p style={styles.subtitle}>Rejoignez la communauté Nolyo</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <Input
-            type="email"
-            name="email"
-            label="Adresse e-mail"
-            placeholder="votre.email@exemple.com"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-
-          <Input
-            type="password"
-            name="password"
-            label="Mot de passe"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
+          <Input type="email" name="email" label="Adresse e-mail" onChange={handleChange} required />
+          <Input type="password" name="password" label="Mot de passe" onChange={handleChange} required />
           <Input
             type="password"
             name="confirmPassword"
             label="Confirmer le mot de passe"
-            placeholder="••••••••"
-            value={formData.confirmPassword}
             onChange={handleChange}
             required
           />
@@ -113,28 +105,25 @@ const Register = () => {
               </label>
             </div>
           </div>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-        <Button
-            type="submit"
-            label="Créer un compte"
-            classNames={["btn_primary", "btn_medium"]}
-          />
-        </div>
-          
+
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              type="submit"
+              label={loading ? "Création..." : "Créer un compte"}
+              classNames={["btn_primary", "btn_medium"]}
+            />
+          </div>
         </form>
 
         <p style={styles.footerText}>
-          Déjà inscrit ? <Link href="/login" style={styles.link}>Se connecter</Link>
+          Déjà inscrit ?{" "}
+          <Link href="/login" style={styles.link}>
+            Se connecter
+          </Link>
         </p>
       </div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 };
@@ -148,7 +137,6 @@ const styles: { [key: string]: CSSProperties } = {
     alignItems: "center",
     height: "100vh",
     backgroundColor: "#f9f9f9",
-    position: "relative",
   },
   card: {
     width: "100%",
