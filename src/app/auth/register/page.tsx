@@ -1,14 +1,20 @@
 "use client";
+
 import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Toast from "@/components/Toast";
-import api from "../../lib/api_client";
+
+const roleMapping: { [key: string]: string } = {
+  acheteur: "CLIENT",
+  vendeur: "VENDEUR",
+};
 
 const Register = () => {
   const [formData, setFormData] = useState({
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -26,7 +32,8 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
+    // Vérifications
+    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
       setToast({ message: "Tous les champs sont requis", type: "error" });
       return;
     }
@@ -39,20 +46,37 @@ const Register = () => {
     try {
       setLoading(true);
 
-      const response = await api.post("/auth/register", {
+      const payload = {
+        username: formData.username,
         email: formData.email,
         password: formData.password,
-        role: formData.role,
+        role: roleMapping[formData.role],
+        isGuest: false,
+      };
+
+      console.log("Form data envoyé:", payload);
+
+      const response = await fetch("https://nolyo-back.onrender.com/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erreur lors de l'inscription");
+      }
+
+      const data = await response.json();
+      console.log("Inscription réussie:", data);
       setToast({ message: "Inscription réussie 🎉", type: "success" });
 
       setTimeout(() => {
-        window.location.href = "/login";
+        window.location.href = "/auth/login";
       }, 1200);
     } catch (error: any) {
-      const msg = error.response?.data?.message || "Erreur lors de l’inscription";
-      setToast({ message: msg, type: "error" });
+      console.error("Erreur API:", error);
+      setToast({ message: error.message || "Erreur lors de l’inscription", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -69,6 +93,7 @@ const Register = () => {
         <p style={styles.subtitle}>Rejoignez la communauté Nolyo</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
+          <Input type="text" name="username" label="Nom d'utilisateur" onChange={handleChange} required />
           <Input type="email" name="email" label="Adresse e-mail" onChange={handleChange} required />
           <Input type="password" name="password" label="Mot de passe" onChange={handleChange} required />
           <Input

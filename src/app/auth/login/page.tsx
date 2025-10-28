@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
-import api from "../../lib/api_client";
 import Toast from "@/components/Toast";
 
 const Login = () => {
@@ -32,22 +31,28 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const response = await api.post("/auth/login", formData);
-      const token = response.data?.token;
+      const response = await fetch("https://nolyo-back.onrender.com/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-      if (token) {
-        localStorage.setItem("token", token);
-        setToast({ message: "Connexion réussie 👋", type: "success" });
+      const data = await response.json();
 
-        setTimeout(() => {
-          window.location.href = "/dashboard"; // 👈 page à rediriger après succès
-        }, 1200);
-      } else {
-        setToast({ message: "Identifiants invalides", type: "error" });
+      if (!response.ok) {
+        throw new Error(data.message || "Erreur de connexion");
       }
+
+  
+      if (data.token) localStorage.setItem("token", data.token);
+
+      setToast({ message: "Connexion réussie 👋", type: "success" });
+
+      setTimeout(() => {
+        window.location.href = "/dashboard"; // page après login
+      }, 1200);
     } catch (error: any) {
-      const msg = error.response?.data?.message || "Erreur de connexion";
-      setToast({ message: msg, type: "error" });
+      setToast({ message: error.message, type: "error" });
     } finally {
       setLoading(false);
     }
@@ -78,7 +83,7 @@ const Login = () => {
 
         <p style={styles.footerText}>
           Pas encore de compte ?{" "}
-          <Link href="/register" style={styles.link}>
+          <Link href="/auth/register" style={styles.link}>
             Créer un compte
           </Link>
         </p>
@@ -90,50 +95,14 @@ const Login = () => {
 };
 
 const styles = {
-  pageContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    backgroundColor: "#f9fafc",
-  },
-  card: {
-    width: "380px",
-    backgroundColor: "#fff",
-    borderRadius: "15px",
-    padding: "35px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    textAlign: "center" as const,
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "18px",
-  },
-  footerText: {
-    marginTop: "20px",
-    fontSize: "14px",
-  },
-  link: {
-    color: "#007BFF",
-    textDecoration: "none",
-    fontWeight: 500,
-  },
-  logoContainer: {
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: "10px",
-  },
-  title: {
-    fontSize: "24px",
-    fontWeight: "600",
-    marginBottom: "10px",
-  },
-  subtitle: {
-    color: "#666",
-    fontSize: "14px",
-    marginBottom: "25px",
-  },
+  pageContainer: { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", backgroundColor: "#f9fafc" },
+  card: { width: "380px", backgroundColor: "#fff", borderRadius: "15px", padding: "35px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", textAlign: "center" as const },
+  form: { display: "flex", flexDirection: "column" as const, gap: "18px" },
+  footerText: { marginTop: "20px", fontSize: "14px" },
+  link: { color: "#007BFF", textDecoration: "none", fontWeight: 500 },
+  logoContainer: { display: "flex", justifyContent: "center", marginBottom: "10px" },
+  title: { fontSize: "24px", fontWeight: "600", marginBottom: "10px" },
+  subtitle: { color: "#666", fontSize: "14px", marginBottom: "25px" },
 };
 
 export default Login;
