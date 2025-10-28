@@ -36,4 +36,11 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 
-Marcelin, Hansly, Jenny, Florian
+
+## Marcelin (back), Hansly(back), Jenny(front), Florian(front)
+
+## Api url :
+https://nolyo-back.onrender.com/
+
+## Api documentation
+https://documenter.getpostman.com/view/49575485/2sB3WmShB9
