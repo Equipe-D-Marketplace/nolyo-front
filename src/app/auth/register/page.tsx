@@ -6,6 +6,7 @@ import Image from "next/image";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Toast from "@/components/Toast";
+import Cookies from "js-cookie"; // 👈 npm i js-cookie
 
 const roleMapping: { [key: string]: string } = {
   acheteur: "CLIENT",
@@ -54,7 +55,7 @@ const Register = () => {
         isGuest: false,
       };
 
-      console.log("Form data envoyé:", payload);
+      console.log("➡️ Données envoyées :", payload);
 
       const response = await fetch("https://nolyo-back.onrender.com/api/auth/register", {
         method: "POST",
@@ -62,20 +63,24 @@ const Register = () => {
         body: JSON.stringify(payload),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erreur lors de l'inscription");
+        throw new Error(data.message || "Erreur lors de l'inscription");
       }
 
-      const data = await response.json();
-      console.log("Inscription réussie:", data);
+      // ✅ Si ton backend renvoie un token, on le stocke dans les cookies
+      if (data.token) {
+        Cookies.set("token", data.token, { expires: 7 }); // valide 7 jours
+      }
+
       setToast({ message: "Inscription réussie 🎉", type: "success" });
 
       setTimeout(() => {
-        window.location.href = "/auth/login";
+        window.location.href = "/login";
       }, 1200);
     } catch (error: any) {
-      console.error("Erreur API:", error);
+      console.error("❌ Erreur API:", error);
       setToast({ message: error.message || "Erreur lors de l’inscription", type: "error" });
     } finally {
       setLoading(false);
@@ -142,7 +147,7 @@ const Register = () => {
 
         <p style={styles.footerText}>
           Déjà inscrit ?{" "}
-          <Link href="/login" style={styles.link}>
+          <Link href="/auth/login" style={styles.link}>
             Se connecter
           </Link>
         </p>
