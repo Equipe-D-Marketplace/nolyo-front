@@ -1,0 +1,83 @@
+import React, { useState } from "react";
+import ProductCard, { ProductCardProps } from "@/components/ProductCard";
+import styles from "./catalogue.module.scss";
+
+export type CatalogueProduct = ProductCardProps;
+
+type CatalogueProps = {
+  products: CatalogueProduct[];
+  className?: string;
+  onProductClick?: (id?: string) => void;
+  onAddToCart?: (id?: string) => void;
+  itemsPerPage?: number;
+};
+
+const Catalogue: React.FC<CatalogueProps> = ({
+  products,
+  itemsPerPage = 9,
+}) => {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  if (!products || products.length === 0) {
+    return <p className={styles.empty}>Aucun produit à afficher.</p>;
+  }
+
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+
+  const start = (currentPage - 1) * itemsPerPage;
+  const paginatedProducts = products.slice(start, start + itemsPerPage);
+
+  const handleCardClick = (id?: string) => {
+    console.log("Product clicked:", id);
+  };
+
+  const handleAddToCart = (id?: string) => {
+    console.log("Product added to cart:", id);
+  };
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  return (
+    <>
+      <section className={styles.catalogue}>
+        {paginatedProducts.map((product) => (
+          <ProductCard
+            key={product.id || product.name}
+            {...product}
+            onCardClick={handleCardClick}
+            onAddToCart={handleAddToCart}
+            className={styles.item}
+          />
+        ))}
+      </section>
+
+      {/* Pagination */}
+      <div className={styles.pagination}>
+        <button
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Précédent
+        </button>
+
+        <span>
+          Page {currentPage} / {totalPages}
+        </span>
+
+        <button
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Suivant
+        </button>
+      </div>
+    </>
+  );
+};
+
+export default Catalogue;
