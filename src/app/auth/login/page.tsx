@@ -57,9 +57,9 @@ const Login = () => {
       console.log("tokentoken", data.data);
       setToast({ message: "Connexion réussie 👋", type: "success" });
 
-      // setTimeout(() => {
-      //   window.location.href = "/dashboard-vendeur";
-      // }, 1200);
+      setTimeout(() => {
+        window.location.href = "/dashboard-vendeur";
+      }, 1200);
     } catch (error: any) {
       setToast({ message: error.message, type: "error" });
     } finally {
