@@ -20,6 +20,13 @@ const Login = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const setCookie = (name: string, value: string, days: number) => {
+    const expires = new Date();
+    expires.setDate(expires.getDate() + days);
+
+    document.cookie = `${name}=${value}; expires=${expires.toUTCString()}; path=/; SameSite=Lax; Secure`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -39,17 +46,17 @@ const Login = () => {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Erreur de connexion");
-      }
+      if (!response.ok) throw new Error(data.message || "Erreur de connexion");
 
-  
-      if (data.token) localStorage.setItem("token", data.token);
+      // 🔐 Enregistrer le token dans un cookie
+      if (data.token) {
+        setCookie("token", data.token, 7); // expire dans 7 jours
+      }
 
       setToast({ message: "Connexion réussie 👋", type: "success" });
 
       setTimeout(() => {
-        window.location.href = "/dashboard-vendeur"; // page après login
+        window.location.href = "/dashboard-vendeur";
       }, 1200);
     } catch (error: any) {
       setToast({ message: error.message, type: "error" });
