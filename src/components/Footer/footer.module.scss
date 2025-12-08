@@ -1,0 +1,38 @@
+.footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  margin-top: auto;
+}
+
+.logo_section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .logo {
+    max-width: 150px;
+    height: auto;
+  }
+}
+
+.copyright_section {
+  background-color: #e9ecef;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.copyright {
+  margin: 0;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.logo {
+  max-width: 120px;
+  height: auto;
+  object-fit: contain;
+}

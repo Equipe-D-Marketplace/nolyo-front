@@ -1,0 +1,46 @@
+/* Minimal styles; adjust as needed */
+.container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  max-width: 200px;
+}
+
+.label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.trigger {
+  width: fit-content;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 6px 8px;
+  max-height: 240px;
+  overflow: auto;
+  z-index: 10;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+}

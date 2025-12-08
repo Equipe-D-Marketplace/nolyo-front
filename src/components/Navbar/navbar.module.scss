@@ -1,21 +1,80 @@
 .nav_container {
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.nav_content {
+  max-width: 1400px;        // ALIGNÉ AVEC TON DASHBOARD
+  margin: 0 auto;
+  padding: 0 24px;
+
+  height: 80px;
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  background-color: #f8f8f8;
-  .nav_list {
-    display: flex;
-    gap: 15px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    .active {
-      color: blue;
-    }
-    .inactive {
-      color:  black;
-    }
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.nav_list {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav_link {
+  color: #333;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: 0.2s ease;
+
+  &:hover {
+    color: #000;
   }
 }
 
+.right_section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cart_button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #000;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+
+  &:hover {
+    background: #000;
+    color: #fff;
+  }
+}
+
+.cart_badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #139cff;
+  color: #fff;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}

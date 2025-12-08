@@ -1,0 +1,30 @@
+.homeContainer{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.homeContainer > div:first-child{
+    flex: 1 1 50%;
+}
+
+.homeContainer > div:last-child{
+    flex: 1 1 50%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 768px){
+    .homeContainer{
+        flex-direction: column;
+        text-align: center;
+    }
+    .homeContainer > div:last-child{
+        justify-content: center;
+    }
+}

@@ -1,0 +1,10 @@
+.main{
+  padding: 30px;
+}
+
+.filter-bar-container{
+  display: flex;
+  gap: 20px;
+  padding: 0 50px;
+  justify-content: center;
+}
