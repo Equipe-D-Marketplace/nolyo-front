@@ -6,6 +6,7 @@ import Image from "next/image";
 import styles from "./navbar.module.scss";
 import Input from "../Input";
 import Button from "../Button";
+import { useCart } from "@/context/CartContext";
 
 export type NavItem = {
   label: string;
@@ -19,6 +20,8 @@ type Props = {
 };
 
 const Navbar = ({ items }: Props) => {
+  const { totalCount, openCart } = useCart();
+
   const handleClick = () => {
     console.log("click !");
   };
@@ -57,10 +60,21 @@ const Navbar = ({ items }: Props) => {
 
           <Button
             label="Mon compte"
-            classNames={["btn_primary", "small"]}
+            classNames={["btn_primary", "btn_small"]}
             type="button"
             handleClick={handleClick}
           />
+
+          <button
+            className={styles.cart_button}
+            onClick={openCart}
+            aria-label="Ouvrir le panier"
+          >
+            <span>Panier</span>
+            {totalCount > 0 && (
+              <span className={styles.cart_badge}>{totalCount}</span>
+            )}
+          </button>
         </div>
 
       </div>

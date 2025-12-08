@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ProductCard, { ProductCardProps } from "@/components/ProductCard";
 import styles from "./catalogue.module.scss";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/context/CartContext";
 
 export type CatalogueProduct = ProductCardProps;
 
@@ -19,6 +20,7 @@ const Catalogue: React.FC<CatalogueProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
+  const { addItem } = useCart();
 
   if (!products || products.length === 0) {
     return <p className={styles.empty}>Aucun produit à afficher.</p>;
@@ -34,7 +36,15 @@ const Catalogue: React.FC<CatalogueProps> = ({
   };
 
   const handleAddToCart = (id?: string) => {
-    console.log("Product added to cart:", id);
+    const product = products.find((p) => p.id === id);
+    if (!product) return;
+    addItem({
+      id: product.id || "",
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      imageUrl: product.imageUrl,
+    });
   };
 
   const goToPage = (page: number) => {

@@ -5,11 +5,13 @@ import styles from "./product.module.scss";
 import { fetchRestApi } from "@/utils/utils";
 import { useParams } from "next/navigation";
 import Button from "@/components/Button"
+import { useCart } from "@/context/CartContext";
 export default function ProductPage() {
   
   const { id } = useParams();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { addItem, openCart } = useCart();
 
   useEffect(() => {
     const load = async () => {
@@ -24,6 +26,18 @@ export default function ProductPage() {
   const handleClick = () => {
     console.log("click")
   }
+
+  const handleAddCartClick = () => {
+    if (!product) return;
+    addItem({
+      id: String(product.id),
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      imageUrl: product.imageUrl,
+    });
+    openCart();
+  };
 
   if (loading) return <p>Chargement...</p>;
 
@@ -69,6 +83,12 @@ export default function ProductPage() {
             classNames={["btn_primary", "small"]}
             type="button"
             handleClick={handleClick}
+          />
+        <Button
+            label="Ajouter au panier"
+            classNames={["btn_primary", "small"]}
+            type="button"
+            handleClick={handleAddCartClick}
           />
       </div>
 
