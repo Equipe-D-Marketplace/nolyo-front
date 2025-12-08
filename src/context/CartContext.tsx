@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useMemo, useState } from "react";
 import CartSidebar, { CartItem } from "@/components/Cart";
+import { fetchRestApi } from "@/utils/utils";
 
 type CartContextValue = {
   items: CartItem[];
@@ -23,17 +24,39 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
+  const syncCart = async (cartItems: CartItem[]) => {
+    try {
+      const payload = {
+        items: cartItems
+          .map(({ id, quantity }) => ({
+            productId: Number(id),
+            quantity,
+          }))
+          .filter(({ productId }) => !Number.isNaN(productId)),
+      };
+
+      const response = await fetchRestApi("cart/add", "POST", payload);
+      console.log("[Cart] Synchronisation API envoyée", payload, response);
+    } catch (error) {
+      console.error("[Cart] Erreur lors de la synchro panier", error);
+    }
+  };
+
   const addItem = (item: CartItem) => {
+    console.log("[Cart] Ajout au panier demandé", item);
+
     setItems((prev) => {
       const existing = prev.find((p) => p.id === item.id);
-      if (existing) {
-        return prev.map((p) =>
-          p.id === item.id
-            ? { ...p, quantity: p.quantity + item.quantity }
-            : p
-        );
-      }
-      return [...prev, item];
+      const nextItems = existing
+        ? prev.map((p) =>
+            p.id === item.id
+              ? { ...p, quantity: p.quantity + item.quantity }
+              : p
+          )
+        : [...prev, item];
+
+      void syncCart(nextItems);
+      return nextItems;
     });
     setIsOpen(true);
   };
