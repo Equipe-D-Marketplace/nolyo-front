@@ -57,12 +57,14 @@ const Navbar = ({ items }: Props) => {
             }
           />
 
-          <Button
-            label="Mon compte"
-            classNames={["btn_primary", "btn_small"]}
-            type="button"
-            handleClick={handleClick}
-          />
+          <Link href="/auth/login">
+            <Button
+              label="Mon compte"
+              classNames={["btn_primary", "btn_small"]}
+              type="button"
+              handleClick={handleClick}
+            />
+          </Link>
 
           <button
             className={styles.cart_button}

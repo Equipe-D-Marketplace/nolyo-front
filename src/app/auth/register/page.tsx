@@ -6,7 +6,7 @@ import Image from "next/image";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Toast from "@/components/Toast";
-import Cookies from "js-cookie"; // 👈 npm i js-cookie
+import Cookies from "js-cookie";
 
 const roleMapping: { [key: string]: string } = {
   acheteur: "CLIENT",
