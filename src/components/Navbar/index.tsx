@@ -26,7 +26,6 @@ const Navbar = ({ items }: Props) => {
   return (
     <nav className={styles.nav_container}>
       <div className={styles.nav_content}>
-        
         {/* LOGO */}
         <div className={styles.logo}>
           <Image src="/logo.png" alt="Nolyo" width={90} height={40} priority />
@@ -55,14 +54,15 @@ const Navbar = ({ items }: Props) => {
             }
           />
 
-          <Button
-            label="Mon compte"
-            classNames={["btn_primary", "small"]}
-            type="button"
-            handleClick={handleClick}
-          />
+          <Link href="/auth/login">
+            <Button
+              label="Mon compte"
+              classNames={["btn_primary", "small"]}
+              type="button"
+              handleClick={handleClick}
+            />
+          </Link>
         </div>
-
       </div>
     </nav>
   );
