@@ -27,6 +27,10 @@ type Product = {
   status: "Actif" | "Inactif";
   createdAt: string; // format YYYY-MM-DD
 };
+// Produits exemple
+// const products = [
+//   { image: "/products/phone.png", name: "Smartphone XPro", categorie: "Technologie", prix: "$999.00", statut: "Actif", date: "2024-07-20" },
+// ];
 
 const DashboardVendeur = () => {
   const router = useRouter();
