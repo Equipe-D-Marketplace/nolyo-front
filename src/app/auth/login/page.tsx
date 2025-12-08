@@ -49,7 +49,7 @@ const Login = () => {
       setToast({ message: "Connexion réussie 👋", type: "success" });
 
       setTimeout(() => {
-        window.location.href = "/dashboard"; // page après login
+        window.location.href = "/dashboard-vendeur"; // page après login
       }, 1200);
     } catch (error: any) {
       setToast({ message: error.message, type: "error" });
