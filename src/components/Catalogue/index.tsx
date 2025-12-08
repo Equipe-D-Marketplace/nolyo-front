@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ProductCard, { ProductCardProps } from "@/components/ProductCard";
 import styles from "./catalogue.module.scss";
+import { useRouter } from "next/navigation";
 
 export type CatalogueProduct = ProductCardProps;
 
@@ -17,6 +18,7 @@ const Catalogue: React.FC<CatalogueProps> = ({
   itemsPerPage = 9,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   if (!products || products.length === 0) {
     return <p className={styles.empty}>Aucun produit à afficher.</p>;
@@ -28,7 +30,7 @@ const Catalogue: React.FC<CatalogueProps> = ({
   const paginatedProducts = products.slice(start, start + itemsPerPage);
 
   const handleCardClick = (id?: string) => {
-    console.log("Product clicked:", id);
+    router.push(`/product/${id}`);
   };
 
   const handleAddToCart = (id?: string) => {
@@ -47,8 +49,12 @@ const Catalogue: React.FC<CatalogueProps> = ({
       <section className={styles.catalogue}>
         {paginatedProducts.map((product) => (
           <ProductCard
-            key={product.id || product.name}
-            {...product}
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            price={product.price}
+            imageUrl={product.imageUrl}
+            category={product.category}
             onCardClick={handleCardClick}
             onAddToCart={handleAddToCart}
             className={styles.item}
