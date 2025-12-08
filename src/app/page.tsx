@@ -6,6 +6,7 @@ import styles from "./page.module.css";
 import { useRouter } from "next/navigation";
 
 import Button from "@/components/Button";
+import Link from "next/link";
 
 export default function Home() {
   const router = useRouter();
@@ -35,5 +36,18 @@ export default function Home() {
         </div>
       </div>
     </main>
+    // <div>
+    //   <h1>Home</h1>
+    //   <nav>
+    //     <ul>
+    //       <li>
+    //         <Link href="/auth/register">Register</Link>
+    //       </li>
+    //       <li>
+    //         <Link href="/auth/login">Login</Link>
+    //       </li>
+    //     </ul>
+    //   </nav>
+    // </div>
   );
 }
