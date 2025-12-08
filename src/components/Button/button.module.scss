@@ -1,0 +1,81 @@
+.btn{
+    display: inline-block;
+    padding: 11px 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition:  0.3s ease-out;
+    height: 40px;
+    &_small{
+        width: 96px;
+    }
+    &_medium{
+        width: 144px;
+    }
+    &_large{
+        width: 192px;
+    }
+    &.with_icon{
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+    &_primary{
+        background-color: #139CFF;
+        border: 1px solid #139CFF;
+        color: white;
+        svg path{
+            fill: white;
+            transition:  0.3s ease-out;
+        }
+        &:hover{
+            background-color: #69c1ff;
+            border: 1px solid black;
+            svg path{
+                fill: black;
+            }
+        }
+    }
+    &_secondary{
+        background-color: white;
+        border: 1px solid black;
+        color: black;
+        svg path{
+            fill: black;
+            transition:  0.3s ease-out;
+        }
+        &:hover{
+            background-color: black;
+            border: 1px solid black;
+            color: white;
+            svg path{
+                fill: white;
+            }
+        }
+    }
+    &_logout{
+        background-color: black;
+        border: 1px solid black;
+        color: white;
+        svg{
+            fill: white;
+        }
+        &:hover{
+            background-color: #ff0000;
+            border: 1px solid #ff0000;
+            color: black;
+            svg{
+                fill: black;
+            }
+        }
+    }
+    &_disabled{
+        opacity: 50%;
+    }
+}
+
+.offset{
+    margin-left: 16px;
+}
