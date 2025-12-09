@@ -22,7 +22,10 @@ const Register = () => {
     role: "acheteur",
   });
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,13 +37,21 @@ const Register = () => {
     e.preventDefault();
 
     // Vérifications
-    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (
+      !formData.username ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
       setToast({ message: "Tous les champs sont requis", type: "error" });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setToast({ message: "Les mots de passe ne correspondent pas", type: "error" });
+      setToast({
+        message: "Les mots de passe ne correspondent pas",
+        type: "error",
+      });
       return;
     }
 
@@ -57,11 +68,14 @@ const Register = () => {
 
       console.log("➡️ Données envoyées :", payload);
 
-      const response = await fetch("https://nolyo-back.onrender.com/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "https://nolyo-back.onrender.com/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await response.json();
 
@@ -81,7 +95,10 @@ const Register = () => {
       }, 1200);
     } catch (error: any) {
       console.error("❌ Erreur API:", error);
-      setToast({ message: error.message || "Erreur lors de l’inscription", type: "error" });
+      setToast({
+        message: error.message || "Erreur lors de l’inscription",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -98,9 +115,27 @@ const Register = () => {
         <p style={styles.subtitle}>Rejoignez la communauté Nolyo</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <Input type="text" name="username" label="Nom d'utilisateur" onChange={handleChange} required />
-          <Input type="email" name="email" label="Adresse e-mail" onChange={handleChange} required />
-          <Input type="password" name="password" label="Mot de passe" onChange={handleChange} required />
+          <Input
+            type="text"
+            name="username"
+            label="Nom d'utilisateur"
+            onChange={handleChange}
+            required
+          />
+          <Input
+            type="email"
+            name="email"
+            label="Adresse e-mail"
+            onChange={handleChange}
+            required
+          />
+          <Input
+            type="password"
+            name="password"
+            label="Mot de passe"
+            onChange={handleChange}
+            required
+          />
           <Input
             type="password"
             name="confirmPassword"
@@ -153,7 +188,13 @@ const Register = () => {
         </p>
       </div>
 
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };
