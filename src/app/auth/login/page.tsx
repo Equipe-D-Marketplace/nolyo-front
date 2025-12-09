@@ -20,8 +20,16 @@ const Login = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const setCookie = (name: string, value: string, days: number) => {
+    const expires = new Date();
+    expires.setDate(expires.getDate() + days);
+
+    document.cookie = `${name}=${value}; expires=${expires.toUTCString()}; path=/; SameSite=Lax; Secure`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
 
     if (!formData.email || !formData.password) {
       setToast({ message: "Veuillez remplir tous les champs", type: "error" });
@@ -38,18 +46,19 @@ const Login = () => {
       });
 
       const data = await response.json();
+      console.log("data", data.data);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Erreur de connexion");
+      if (!response.ok) throw new Error(data.message || "Erreur de connexion");
+
+      // 🔐 Enregistrer le token dans un cookie
+      if (data) {
+        setCookie("token", data.data, 7); // expire dans 7 jours
       }
-
-  
-      if (data.token) localStorage.setItem("token", data.token);
-
+      console.log("tokentoken", data.data);
       setToast({ message: "Connexion réussie 👋", type: "success" });
 
       setTimeout(() => {
-        window.location.href = "/dashboard"; // page après login
+        window.location.href = "/dashboard-vendeur";
       }, 1200);
     } catch (error: any) {
       setToast({ message: error.message, type: "error" });

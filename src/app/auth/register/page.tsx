@@ -70,8 +70,8 @@ const Register = () => {
       }
 
       // ✅ Si ton backend renvoie un token, on le stocke dans les cookies
-      if (data.token) {
-        Cookies.set("token", data.token, { expires: 7 }); // valide 7 jours
+      if (data) {
+        Cookies.set("token", data.data, { expires: 7 }); // valide 7 jours
       }
 
       setToast({ message: "Inscription réussie 🎉", type: "success" });
