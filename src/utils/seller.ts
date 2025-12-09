@@ -26,7 +26,7 @@ export const getSeller = (): MyJwtPayload | null => {
 };
 
 export const setSeller = (seller: Seller): void => {
-  localStorage.setItem("token", seller);
+  localStorage.setItem("token", JSON.stringify(seller));
 };
 
 export const clearSeller = (): void => {
