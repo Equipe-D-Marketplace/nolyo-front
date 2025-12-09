@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 import React, { useState } from "react";
 import Image from "next/image";
 import Input from "@/components/Input";
@@ -7,6 +9,7 @@ import Button from "@/components/Button";
 import Toast from "@/components/Toast";
 
 const Login = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -51,15 +54,28 @@ const Login = () => {
       if (!response.ok) throw new Error(data.message || "Erreur de connexion");
 
       // 🔐 Enregistrer le token dans un cookie
-      if (data) {
+      if (data && data.data && data.data.token) {
         setCookie("token", data.data.token, 7); // expire dans 7 jours
-      }
-      console.log("tokentoken", data.data);
-      setToast({ message: "Connexion réussie 👋", type: "success" });
 
-      setTimeout(() => {
-        window.location.href = "/dashboard-vendeur";
-      }, 1200);
+        try {
+          const decoded = jwtDecode<{ role: string }>(data.data.token);
+          const role = decoded.role;
+
+          setToast({ message: "Connexion réussie 👋", type: "success" });
+
+          setTimeout(() => {
+            if (role === "VENDEUR") {
+              router.push("/dashboard-vendeur");
+            } else {
+              router.push("/");
+            }
+          }, 1200);
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          // Fallback default redirect if decoding fails
+          window.location.href = "/";
+        }
+      }
     } catch (error: any) {
       setToast({ message: error.message, type: "error" });
     } finally {

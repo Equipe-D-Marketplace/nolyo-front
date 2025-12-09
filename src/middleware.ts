@@ -9,13 +9,18 @@ interface MyJwtPayload {
 }
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value || null;
-  if (!token) {
-    throw new Error("Utilisateur non authentifié");
+  let decoded: MyJwtPayload | null = null;
+  let role: string | null = null;
+
+  if (token) {
+    try {
+      decoded = jwtDecode<MyJwtPayload>(token);
+      role = decoded.role;
+    } catch (e) {
+      console.error("Invalid token", e);
+    }
   }
-  const decoded = jwtDecode<MyJwtPayload>(token);
-  const role = decoded.role
-  console.log("decoded",decoded);
-  
+
 
   const pathname = req.nextUrl.pathname;
 
