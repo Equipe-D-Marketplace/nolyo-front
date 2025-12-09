@@ -22,6 +22,7 @@ type CartContextValue = {
   updateQuantity: (id: string, quantity: number) => void;
   openCart: () => void;
   closeCart: () => void;
+  checkout: () => Promise<void>;
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -37,6 +38,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const cartCreatedRef = useRef(false);
   const lastSyncSignatureRef = useRef<string | null>(null);
   const lastSyncAtRef = useRef<number>(0);
+  const checkoutInFlightRef = useRef(false);
 
   const getToken = () => {
     if (typeof document === "undefined") return null;
@@ -56,12 +58,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           Authorization: `Bearer ${token}`,
         });
 
-        const apiItems =
-          response?.data?.items ||
-          response?.items ||
-          response?.data ||
-          response ||
-          [];
+        // Le backend renvoie `data.panier` (tableau). On prend le plus récent.
+        const carts = response?.data?.panier;
+        const latestCart =
+          Array.isArray(carts) && carts.length > 0
+            ? carts
+                .slice()
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt || 0).getTime() -
+                    new Date(a.createdAt || 0).getTime()
+                )[0]
+            : null;
+
+        const apiItems = latestCart?.items || [];
 
         const mapped: CartItem[] = (Array.isArray(apiItems) ? apiItems : []).map(
           (item: any) => ({
@@ -188,6 +198,58 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
+  const checkout = async () => {
+    const token = getToken();
+    if (!token) {
+      setToast({
+        message: "Veuillez vous connecter pour payer votre panier.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (checkoutInFlightRef.current) return;
+    checkoutInFlightRef.current = true;
+
+    try {
+      const payload = {
+        products: items.map(({ id, quantity }) => ({
+          productId: Number(id),
+          quantity,
+        })),
+      };
+
+      const response = await fetchRestApi(
+        "order/session",
+        "POST",
+        payload,
+        {
+          Authorization: `Bearer ${token}`,
+        }
+      );
+
+      const url =
+        response?.data ||
+        response?.sessionUrl ||
+        response?.url ||
+        null;
+
+      if (!url || typeof url !== "string") {
+        throw new Error("Impossible de récupérer l'URL de paiement.");
+      }
+
+      window.location.href = url;
+    } catch (error: any) {
+      console.error("[Cart] Erreur lors du paiement", error);
+      setToast({
+        message: error?.message || "Le paiement a échoué.",
+        type: "error",
+      });
+    } finally {
+      checkoutInFlightRef.current = false;
+    }
+  };
+
   const totalCount = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity, 0),
     [items]
@@ -211,6 +273,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     updateQuantity,
     openCart,
     closeCart,
+    checkout,
   };
 
   return (
@@ -220,7 +283,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         isOpen={isOpen}
         items={items}
         onClose={closeCart}
-        onCheckout={() => console.log("Paiement déclenché")}
+        onCheckout={checkout}
         onRemoveItem={removeItem}
         onQuantityChange={updateQuantity}
       />
