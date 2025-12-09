@@ -19,15 +19,14 @@ export default function Explore() {
     const load = async () => {
       const resProducts = await fetchRestApi("products", "GET");
       const resCat = await fetchRestApi("categories", "GET");
-  
+
       setProducts(resProducts?.data || []);
       setCategories(resCat?.data || []);
       setLoading(false);
     };
-  
+
     load();
   }, []);
-  
 
   const handlePriceChange = (values: { min: number; max: number }) => {
     setPriceFilter(values);
@@ -39,10 +38,11 @@ export default function Explore() {
 
   if (loading) return <p>Chargement des produits...</p>;
 
+  // 🔥 Filtrage correct : ID ↔ ID
   const filteredProducts = products.filter((p) => {
     const matchCategory =
       selectedCategories.length === 0 ||
-      selectedCategories.includes(p.category?.name);
+      selectedCategories.includes(p.category?.id);
 
     const matchPrice =
       p.price >= priceFilter.min && p.price <= priceFilter.max;
@@ -55,16 +55,10 @@ export default function Explore() {
       <div className={style["filter-bar-container"]}>
         <Multiselect
           label="Catégories : "
-          options={
-            categories.map((cat) => {
-              return {value: cat.id, label: cat.name}
-            })
-          }
-          // {[
-          //   categories.map((cat) => cat.name)
-          // ]
-          //   .filter(Boolean)
-          //   .map((c) => ({ value: c.id, label: c.name }))}
+          options={categories.map((cat) => ({
+            value: cat.id,   // 👉 ID envoyé
+            label: cat.name, // 👉 label affiché
+          }))}
           value={selectedCategories}
           onChange={handleCategoryChange}
         />

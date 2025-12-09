@@ -113,7 +113,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
 
         {onAddToCart && (
-          <button
+          <button 
+          style={{ marginLeft: "10px" }}
             className={styles.add_to_cart}
             onClick={handleAddToCart}
             aria-label={`Ajouter ${name} au panier`}
