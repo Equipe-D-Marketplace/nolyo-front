@@ -53,7 +53,6 @@ const Login = () => {
       // 🔐 Enregistrer le token dans un cookie
       if (data) {
         setCookie("token", data.data.token, 7); // expire dans 7 jours
-        setCookie("role", data.data.user.role, 7); // expire dans 7 jours
       }
       console.log("tokentoken", data.data);
       setToast({ message: "Connexion réussie 👋", type: "success" });
