@@ -39,10 +39,10 @@ export default function ProductsPage() {
           {products.map((p) => (
             <tr key={p.id}>
               <td>{p.name}</td>
-              <td>{p.price}</td>
+              <td>{p.price} €</td>
               <td className={styles.actions}>
-                <Link href={`/add-product/${p.id}`}>Voir</Link>
-                <Link href={`/add-product/edit/${p.id}`}>Modifier</Link>
+                <Link href={`/product/${p.id}`}>Voir</Link>
+                <Link href={`/product/edit/${p.id}`}>Modifier</Link>
                 <button onClick={() => handleDelete(p.id)}>Suppr</button>
               </td>
             </tr>
