@@ -1,10 +1,15 @@
 // const endpoint = "http://localhost:3030/graphql";
 
-export const fetchRestApi = async (endpoint: string, method: string, input?: object) => {
+export const fetchRestApi = async (
+  endpoint: string,
+  method: string,
+  input?: object,
+  extraHeaders?: HeadersInit
+) => {
   try {
     const options: RequestInit = {
       method,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json", ...(extraHeaders || {}) }
     };
 
     if (method !== "GET" && input) {
