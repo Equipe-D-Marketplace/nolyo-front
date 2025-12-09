@@ -8,7 +8,8 @@ type Props = {
   iconPosition?: string;
   type: "button" | "submit";
   classNames: string[];
-  disabled?: boolean
+  disabled?: boolean;
+  style?: React.CSSProperties;
 };
 
 const index = ({ label, handleClick, icon, classNames, type, iconPosition="left", disabled }: Props) => {

@@ -37,8 +37,8 @@ export default function RootLayout({
         <Providers>
           <Navbar items={item}></Navbar>
           {children}
-          <Footer></Footer>
         </Providers>
+        <Footer></Footer>
       </body>
     </html>
   );
