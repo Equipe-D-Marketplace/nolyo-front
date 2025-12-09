@@ -2,8 +2,8 @@ import React from 'react'
 
 type Props = {}
 
-const page = (props: Props) => {
+export default function ProfilPage() {
   return (
-    <div>page</div>
+    <div>ProfilPage</div>
   )
 }
