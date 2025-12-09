@@ -22,6 +22,27 @@ type CartContextValue = {
   updateQuantity: (id: string, quantity: number) => void;
   openCart: () => void;
   closeCart: () => void;
+  checkout: () => Promise<void>;
+  addresses: Address[];
+  selectedAddressId: string | null;
+  selectAddress: (id: string) => void;
+  createAddress: (addr: NewAddressPayload) => Promise<void>;
+};
+
+type Address = {
+  id: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  isDefault?: boolean;
+};
+
+type NewAddressPayload = {
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -34,9 +55,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [toast, setToast] = useState<
     { message: string; type: "success" | "error" | "info" } | null
   >(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const cartCreatedRef = useRef(false);
   const lastSyncSignatureRef = useRef<string | null>(null);
   const lastSyncAtRef = useRef<number>(0);
+  const checkoutInFlightRef = useRef(false);
+  const cartIdRef = useRef<string | null>(null);
 
   const getToken = () => {
     if (typeof document === "undefined") return null;
@@ -56,12 +81,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           Authorization: `Bearer ${token}`,
         });
 
-        const apiItems =
-          response?.data?.items ||
-          response?.items ||
-          response?.data ||
-          response ||
-          [];
+        // Le backend renvoie `data.panier` (tableau). On prend le plus récent.
+        const carts = response?.data?.panier;
+        const latestCart =
+          Array.isArray(carts) && carts.length > 0
+            ? carts
+                .slice()
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt || 0).getTime() -
+                    new Date(a.createdAt || 0).getTime()
+                )[0]
+            : null;
+
+        if (latestCart?.id) {
+          cartIdRef.current = String(latestCart.id);
+        }
+
+        const apiItems = latestCart?.items || [];
 
         const mapped: CartItem[] = (Array.isArray(apiItems) ? apiItems : []).map(
           (item: any) => ({
@@ -89,6 +126,54 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     void loadCart();
   }, []);
 
+  useEffect(() => {
+    const token = getToken();
+    if (!token) return;
+
+    const loadAddresses = async () => {
+      try {
+        const response = await fetchRestApi("address/", "GET", undefined, {
+          Authorization: `Bearer ${token}`,
+        });
+
+        const list =
+          response?.data?.data ||
+          response?.data?.addresses ||
+          response?.data ||
+          response ||
+          [];
+
+        const mapped: Address[] = (Array.isArray(list) ? list : []).map(
+          (addr: any) => ({
+            id: String(addr.id ?? ""),
+            street: addr.street ?? "",
+            city: addr.city ?? "",
+            postalCode: addr.postalCode ?? "",
+            country: addr.country ?? "",
+            isDefault: !!addr.isDefault,
+          })
+        );
+
+        setAddresses(mapped);
+        if (mapped.length > 0) {
+          const defaultAddr =
+            mapped.find((a) => a.isDefault) ?? mapped[0];
+          setSelectedAddressId(defaultAddr.id);
+        } else {
+          setSelectedAddressId(null);
+        }
+      } catch (error) {
+        console.error("[Cart] Erreur lors du chargement des adresses", error);
+        setToast({
+          message: "Impossible de charger vos adresses.",
+          type: "error",
+        });
+      }
+    };
+
+    void loadAddresses();
+  }, []);
+
   const syncCart = async (cartItems: CartItem[], token: string) => {
     try {
       const payload = {
@@ -98,6 +183,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
             quantity,
           }))
           .filter(({ productId }) => !Number.isNaN(productId)),
+        cartId: cartIdRef.current ? Number(cartIdRef.current) : undefined,
       };
 
       const signature = JSON.stringify(payload);
@@ -116,6 +202,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         Authorization: `Bearer ${token}`,
       });
       console.log("[Cart] Synchronisation API envoyée", payload, response);
+
+      const returnedId =
+        response?.data?.id ||
+        response?.data?.cartId ||
+        response?.cartId ||
+        response?.id;
+      if (returnedId) {
+        cartIdRef.current = String(returnedId);
+      }
     } catch (error) {
       console.error("[Cart] Erreur lors de la synchro panier", error);
       setToast({
@@ -188,6 +283,117 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
+  const checkout = async () => {
+    const token = getToken();
+    if (!token) {
+      setToast({
+        message: "Veuillez vous connecter pour payer votre panier.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (!selectedAddressId) {
+      setToast({
+        message: "Veuillez sélectionner une adresse avant de payer.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (checkoutInFlightRef.current) return;
+    checkoutInFlightRef.current = true;
+
+    try {
+      const payload = {
+        products: items.map(({ id, quantity }) => ({
+          productId: Number(id),
+          quantity,
+        })),
+        cartId: cartIdRef.current ? Number(cartIdRef.current) : undefined,
+        addressId: Number(selectedAddressId),
+      };
+
+      const response = await fetchRestApi(
+        "order/session",
+        "POST",
+        payload,
+        {
+          Authorization: `Bearer ${token}`,
+        }
+      );
+
+      const url =
+        response?.data ||
+        response?.sessionUrl ||
+        response?.url ||
+        null;
+
+      if (!url || typeof url !== "string") {
+        throw new Error("Impossible de récupérer l'URL de paiement.");
+      }
+
+      window.location.href = url;
+    } catch (error: any) {
+      console.error("[Cart] Erreur lors du paiement", error);
+      setToast({
+        message: error?.message || "Le paiement a échoué.",
+        type: "error",
+      });
+    } finally {
+      checkoutInFlightRef.current = false;
+    }
+  };
+
+  const selectAddress = (id: string) => {
+    setSelectedAddressId(id);
+  };
+
+  const createAddress = async (addr: NewAddressPayload) => {
+    const token = getToken();
+    if (!token) {
+      setToast({
+        message: "Veuillez vous connecter pour ajouter une adresse.",
+        type: "error",
+      });
+      return;
+    }
+    try {
+      const response = await fetchRestApi("address/add", "POST", addr, {
+        Authorization: `Bearer ${token}`,
+      });
+
+      const created =
+        response?.data?.data ||
+        response?.data ||
+        response ||
+        null;
+
+      if (!created?.id) {
+        throw new Error("Adresse non créée.");
+      }
+
+      const newAddr: Address = {
+        id: String(created.id),
+        street: created.street ?? addr.street,
+        city: created.city ?? addr.city,
+        postalCode: created.postalCode ?? addr.postalCode,
+        country: created.country ?? addr.country,
+        isDefault: !!created.isDefault,
+      };
+
+      setAddresses((prev) => [...prev, newAddr]);
+      setSelectedAddressId(newAddr.id);
+      setToast({ message: "Adresse ajoutée.", type: "success" });
+    } catch (error) {
+      console.error("[Cart] Erreur lors de l'ajout d'adresse", error);
+      setToast({
+        message: "Impossible d'ajouter l'adresse.",
+        type: "error",
+      });
+    }
+  };
+
   const totalCount = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity, 0),
     [items]
@@ -211,6 +417,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     updateQuantity,
     openCart,
     closeCart,
+    checkout,
+    addresses,
+    selectedAddressId,
+    selectAddress,
+    createAddress,
   };
 
   return (
@@ -220,9 +431,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         isOpen={isOpen}
         items={items}
         onClose={closeCart}
-        onCheckout={() => console.log("Paiement déclenché")}
+        onCheckout={checkout}
         onRemoveItem={removeItem}
         onQuantityChange={updateQuantity}
+        addresses={addresses}
+        selectedAddressId={selectedAddressId}
+        onSelectAddress={selectAddress}
+        onCreateAddress={createAddress}
       />
       {toast && (
         <Toast
