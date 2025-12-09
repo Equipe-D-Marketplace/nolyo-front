@@ -1,10 +1,25 @@
+// app/product/page.tsx (ou votre chemin actuel)
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getProducts, deleteProduct, ProductType } from "../lib/products";
+import Link from "next/link";
+import ProductCard from "@/components/ProductCard";
+import { getProducts, ProductType } from "@/lib/products";
 import styles from "../dashboard.module.css";
-import Button from "@/components/Button";
+
+// Adapter la structure de données pour ProductCard
+const adaptProduct = (p: ProductType) => ({
+  id: p.id,
+  name: p.name,
+  price: p.price,
+  category: {
+    id: 0,
+    name: p.category || "Autre",
+    description: p.category || "Catégorie",
+  },
+  imageUrl: p.image || "/placeholder.png",
+  imageAlt: p.name,
+});
 
 export default function ProductList() {
   const [products, setProducts] = useState<ProductType[]>([]);
@@ -25,10 +40,8 @@ export default function ProductList() {
   const categories = [...new Set(products.map((p) => p.category))];
 
   return (
-    <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "2rem", fontWeight: "600", marginBottom: "20px", textAlign: "center" }}>
-        Découvrez nos produits
-      </h1>
+    <div className={styles.pageContainer}>
+      <h1 className={styles.pageTitle}>Découvrez nos produits</h1>
 
       {/* Filtres */}
       <div className={styles.filterContainer}>
@@ -37,12 +50,7 @@ export default function ProductList() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            style={{
-              marginLeft: "10px",
-              padding: "8px",
-              borderRadius: "8px",
-              border: "1px solid #ddd",
-            }}
+            className={styles.select}
           >
             <option value="">Toutes les catégories</option>
             {categories.map((cat) => (
@@ -53,14 +61,13 @@ export default function ProductList() {
 
         <div className={styles.priceRange}>
           <span className={styles.filterLabel}>Prix :</span>
-          <span>{priceMin}€ Min</span>
           <input
             type="range"
             min="0"
             max="2000"
             value={priceMin}
             onChange={(e) => setPriceMin(Number(e.target.value))}
-            style={{ marginLeft: "10px" }}
+            className={styles.rangeInput}
           />
           <input
             type="range"
@@ -68,45 +75,23 @@ export default function ProductList() {
             max="2000"
             value={priceMax}
             onChange={(e) => setPriceMax(Number(e.target.value))}
-            style={{ marginLeft: "10px" }}
+            className={styles.rangeInput}
           />
-          <span>{priceMax}€ Max</span>
+          <span>{priceMin}€ – {priceMax}€</span>
         </div>
       </div>
 
-      {/* Grille de produits */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: "20px",
-          marginTop: "20px",
-        }}
-      >
-        {filteredProducts.map((p) => (
-          <div key={p.id} className={styles.productCard}>
-            {p.image && (
-              <img
-                src={p.image}
-                alt={p.name}
-                className={styles.productImage}
-              />
-            )}
-            <div className={styles.productCategory}>{p.category}</div>
-            <h3 className={styles.productName}>{p.name}</h3>
-            <div className={styles.productPrice}>{p.price} €</div>
-            <Link href={`/product/${p.id}`} className={styles.addToCartButton}>
-              Ajouter au panier
+      {/* Grille de produits avec ProductCard */}
+      <div className={styles.productsGrid}>
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((p) => (
+            <Link href={`/product/${p.id}`} key={p.id}>
+              <ProductCard {...adaptProduct(p)} />
             </Link>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      <div className={styles.pagination}>
-        <Button label="Précedent" type="button" classNames={["btn-primary"]} disabled={false}></Button>
-        <span>Page 1 / 1</span>
-        <Button label="Suivant" type="button" classNames={["btn-primary"]} disabled={false}></Button>
+          ))
+        ) : (
+          <div className={styles.noResults}>Aucun produit trouvé.</div>
+        )}
       </div>
     </div>
   );
