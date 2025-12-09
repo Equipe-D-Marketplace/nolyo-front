@@ -10,17 +10,18 @@ type Props = {
   classNames: string[];
   disabled?: boolean;
   style?: React.CSSProperties;
+  title?: string;
 };
 
-const index = ({ label, handleClick, icon, classNames, type, iconPosition="left", disabled }: Props) => {
+const index = ({ label, handleClick, icon, classNames, type, iconPosition = "left", disabled, title }: Props) => {
   const styleClass = [styles.btn, disabled ? styles.btn_disabled : "", ...classNames.map((name) => styles[name])].join(" ");
   return (
-    <button disabled={disabled} type={type} onClick={handleClick} className={`${styleClass}`}>
-      {icon && iconPosition === "left" &&( //opti flex order 
+    <button disabled={disabled} type={type} onClick={handleClick} className={`${styleClass}`} title={title}>
+      {icon && iconPosition === "left" && ( //opti flex order 
         <span className={styles.icon_wrapper}>{icon}</span>
       )}
       {label}
-      {icon && iconPosition == "right" &&( //opti flex order 
+      {icon && iconPosition == "right" && ( //opti flex order 
         <span className={styles.icon_wrapper}>{icon}</span>
       )}
     </button>

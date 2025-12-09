@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Cookies from "js-cookie";
+
 import styles from "./navbar.module.scss";
 import Input from "../Input";
 import Button from "../Button";
@@ -21,6 +23,13 @@ type Props = {
 
 const Navbar = ({ items }: Props) => {
   const { totalCount, openCart } = useCart();
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+    setIsLoggedIn(!!token);
+  }, []);
 
   const handleClick = () => {
     console.log("click !");
@@ -57,9 +66,9 @@ const Navbar = ({ items }: Props) => {
             }
           />
 
-          <Link href="/auth/login">
+          <Link href={isLoggedIn ? "/profil" : "/auth/login"}>
             <Button
-              label="Mon compte"
+              label={isLoggedIn ? "Mon compte" : "Se connecter"}
               classNames={["btn_primary", "btn_small"]}
               type="button"
               handleClick={handleClick}

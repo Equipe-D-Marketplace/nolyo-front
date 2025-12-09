@@ -9,13 +9,14 @@ interface MyJwtPayload {
 }
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value || null;
-  let decoded: MyJwtPayload | null = null;
-  let role: string | null = null;
-
+  console.log("token", token);
+  let role = "";
+  let decoded: MyJwtPayload | null =  null;
   if (token) {
     try {
       decoded = jwtDecode<MyJwtPayload>(token);
-      role = decoded.role;
+      role = decoded?.role || "";
+      console.log("role", role);
     } catch (e) {
       console.error("Invalid token", e);
     }
@@ -62,6 +63,8 @@ export const config = {
     "/product/new",
     "/dashboard-vendeur",
     "/product",
+    "/sales",
+    "/profil",
     "/auth/login",
     "/auth/register",
   ],

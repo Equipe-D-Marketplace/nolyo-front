@@ -7,6 +7,8 @@ import Image from "next/image";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Toast from "@/components/Toast";
+import { setSeller } from "@/utils/seller";
+
 
 const Login = () => {
   const router = useRouter();
@@ -52,6 +54,7 @@ const Login = () => {
       console.log("data", data.data);
 
       if (!response.ok) throw new Error(data.message || "Erreur de connexion");
+console.log("data.data.token", data.data.token);
 
       // 🔐 Enregistrer le token dans un cookie
       if (data && data.data && data.data.token) {
@@ -61,7 +64,19 @@ const Login = () => {
           const decoded = jwtDecode<{ role: string }>(data.data.token);
           const role = decoded.role;
 
+          // 💾 Sauvegarder les infos du vendeur dans localStorage
+          // On essaie de sauvegarder data.data.user ou data.data si c'est plat, ou on décode si nécessaire.
+          // Ici on suppose que l'API renvoie les infos utilisateur dans data.data ou data.data.user
+          // Pour l'instant on sauvegarde data.data.user s'il existe, sinon data.data (moins le token idéalement mais pas grave)
+          if (role === "VENDEUR") {
+            const sellerRaw = data.data.user || data.data;
+            // On s'assure d'avoir les champs minimaux (id, name, email)
+            // Note: le type Seller attend id, name, email.
+            setSeller(sellerRaw);
+          }
+
           setToast({ message: "Connexion réussie 👋", type: "success" });
+
 
           setTimeout(() => {
             if (role === "VENDEUR") {
