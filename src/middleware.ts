@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
+import { jwtDecode } from "jwt-decode";
 import type { NextRequest } from "next/server";
-
+interface MyJwtPayload {
+  userId: number;
+  role: string;
+  iat: number;
+  exp: number;
+}
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value || null;
-  const role = req.cookies.get("role")?.value || null;
+  if (!token) {
+    throw new Error("Utilisateur non authentifié");
+  }
+  const decoded = jwtDecode<MyJwtPayload>(token);
+  const role = decoded.role
+  console.log("decoded",decoded);
+  
 
   const pathname = req.nextUrl.pathname;
 
