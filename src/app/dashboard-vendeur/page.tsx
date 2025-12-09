@@ -20,10 +20,6 @@ const salesData = [
 // Produits exemple
 const products = [
   { image: "/products/phone.png", name: "Smartphone XPro", categorie: "Technologie", prix: "$999.00", statut: "Actif", date: "2024-07-20" },
-  { image: "/products/book.png", name: "Livre 'Le Mystère'", categorie: "Livres", prix: "$25.00", statut: "Actif", date: "2024-07-18" },
-  { image: "/products/tshirt.png", name: "T-Shirt Casual", categorie: "Vêtements", prix: "$40.00", statut: "Inactif", date: "2024-07-15" },
-  { image: "/products/headset.png", name: "Casque Bluetooth", categorie: "Technologie", prix: "$150.00", statut: "Actif", date: "2024-07-12" },
-  { image: "/products/shoes.png", name: "Chaussures de Sport", categorie: "Vêtements", prix: "$85.00", statut: "Actif", date: "2024-07-10" },
 ];
 
 const DashboardVendeur = () => {
