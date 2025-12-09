@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./cart.module.scss";
 import Button from "@/components/Button";
 
@@ -18,6 +18,21 @@ type CartProps = {
   onCheckout: () => void;
   onRemoveItem?: (id: string) => void;
   onQuantityChange?: (id: string, quantity: number) => void;
+  addresses?: {
+    id: string;
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  }[];
+  selectedAddressId?: string | null;
+  onSelectAddress?: (id: string) => void;
+  onCreateAddress?: (addr: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  }) => void;
 };
 
 const CartSidebar: React.FC<CartProps> = ({
@@ -28,7 +43,19 @@ const CartSidebar: React.FC<CartProps> = ({
   onCheckout,
   onRemoveItem,
   onQuantityChange,
+  addresses = [],
+  selectedAddressId,
+  onSelectAddress,
+  onCreateAddress,
 }) => {
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [addressForm, setAddressForm] = useState({
+    street: "",
+    city: "",
+    postalCode: "",
+    country: "",
+  });
+
   const updateQuantity = (id: string, delta: number) => {
     if (!onQuantityChange) return;
     const current = items.find((item) => item.id === id)?.quantity ?? 1;
@@ -40,6 +67,18 @@ const CartSidebar: React.FC<CartProps> = ({
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  const handleAddressSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onSelectAddress?.(e.target.value);
+  };
+
+  const handleAddressSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addressForm.street || !addressForm.city || !addressForm.postalCode || !addressForm.country) return;
+    onCreateAddress?.(addressForm);
+    setShowAddressForm(false);
+    setAddressForm({ street: "", city: "", postalCode: "", country: "" });
+  };
 
   return (
     <div className={`${styles.drawer} ${isOpen ? styles.drawer_open : ""}`}>
@@ -119,6 +158,78 @@ const CartSidebar: React.FC<CartProps> = ({
         </div>
 
         <footer className={styles.footer}>
+          <div className={styles.address_block}>
+            <div className={styles.address_header}>
+              <span>Adresse de livraison</span>
+              {addresses.length === 0 && (
+                <span className={styles.address_hint}>Aucune adresse enregistrée</span>
+              )}
+            </div>
+
+            {addresses.length > 0 && (
+              <select
+                className={styles.address_select}
+                value={selectedAddressId ?? ""}
+                onChange={handleAddressSelect}
+              >
+                <option value="" disabled>
+                  Sélectionnez une adresse
+                </option>
+                {addresses.map((addr) => (
+                  <option key={addr.id} value={addr.id}>
+                    {addr.street}, {addr.postalCode} {addr.city}, {addr.country}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <button
+              type="button"
+              className={styles.address_add}
+              onClick={() => setShowAddressForm((prev) => !prev)}
+            >
+              {showAddressForm ? "Annuler" : "Ajouter une adresse"}
+            </button>
+
+            {showAddressForm && (
+              <form className={styles.address_form} onSubmit={handleAddressSubmit}>
+                <input
+                  type="text"
+                  placeholder="Rue"
+                  value={addressForm.street}
+                  onChange={(e) => setAddressForm((p) => ({ ...p, street: e.target.value }))}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Ville"
+                  value={addressForm.city}
+                  onChange={(e) => setAddressForm((p) => ({ ...p, city: e.target.value }))}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Code postal"
+                  value={addressForm.postalCode}
+                  onChange={(e) => setAddressForm((p) => ({ ...p, postalCode: e.target.value }))}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Pays"
+                  value={addressForm.country}
+                  onChange={(e) => setAddressForm((p) => ({ ...p, country: e.target.value }))}
+                  required
+                />
+                <Button
+                  label="Enregistrer"
+                  type="submit"
+                  classNames={["btn_primary", "btn_small"]}
+                />
+              </form>
+            )}
+          </div>
+
           <div className={styles.total}>
             <span>Total</span>
             <strong>
@@ -132,7 +243,7 @@ const CartSidebar: React.FC<CartProps> = ({
             type="button"
             handleClick={onCheckout}
             classNames={["btn_primary", "btn_large", "with_icon"]}
-            disabled={items.length === 0}
+            disabled={items.length === 0 || !selectedAddressId}
           />
         </footer>
       </aside>
