@@ -10,16 +10,38 @@ import styles from "../dashboard.module.css";
 import Cookies from "js-cookie";
 
 
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+}
+
+interface OrderItem {
+  id: number;
+  quantity: number;
+  unitPrice: number;
+  product: Product;
+}
+
+interface Order {
+  id: number;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+  items: OrderItem[];
+}
+
 export default function SellerProfilePage() {
   const router = useRouter();
   const [seller, setSeller] = useState<any>(null);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     const token = Cookies.get("token");
 
     if (!token) {
-      // Redirige vers une page qui existe (ex: accueil)
       router.push("/");
       return;
     }
@@ -27,7 +49,7 @@ export default function SellerProfilePage() {
     const fetchProfile = async () => {
       try {
         const decodedUser: any = jwtDecode(token);
-        const userId = decodedUser.userId || decodedUser.id; // Adjust based on actual token payload
+        const userId = decodedUser.userId || decodedUser.id;
 
         if (!userId) {
           console.error("No user ID found in token");
@@ -43,8 +65,6 @@ export default function SellerProfilePage() {
         });
 
         const data = await response.json();
-        console.log("data", data);
-        // Assuming the API returns the user object in data.data or directly in data
         setSeller(data.data || data);
 
       } catch (error) {
@@ -68,7 +88,18 @@ export default function SellerProfilePage() {
 
         const data = await response.json();
         console.log("orders data", data);
-        setOrders(data);
+        // User indicates response structure is { data: [...] } or potentially just [...] based on previous context, 
+        // but user specifically pasted "data": [...] which usually implies a wrapper.
+        // We handle both just in case:
+        if (data.data && Array.isArray(data.data)) {
+          setOrders(data.data);
+        } else if (Array.isArray(data)) {
+          setOrders(data);
+        } else {
+          console.warn("Unexpected orders data structure", data);
+          setOrders([]);
+        }
+
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -81,7 +112,7 @@ export default function SellerProfilePage() {
   const handleLogout = () => {
     clearSeller();
     Cookies.remove("token");
-    router.push("/"); // Redirige vers l'accueil après déconnexion
+    router.push("/");
   };
 
   if (!seller) return null;
@@ -98,18 +129,33 @@ export default function SellerProfilePage() {
           {seller.company && <p><strong>Entreprise :</strong> {seller.company}</p>}
           {seller.phone && <p><strong>Téléphone :</strong> {seller.phone}</p>}
         </section>
-        <section>
-          <h2>Commandes</h2>
+
+        <section className={styles.ordersSection}>
+          <h2>Mes Commandes</h2>
           <div className={styles.ordersList}>
             {orders.length === 0 ? (
               <p>Aucune commande trouvée.</p>
             ) : (
-              orders.map((order: any, index: number) => (
-                <div key={index} className={styles.orderCard}>
-                  <p><strong>Commande date : </strong> {new Date(order.createdAt).toLocaleDateString()}</p>
-                  <p><strong>Total :</strong> {order.totalAmount} €</p>
-                  <p><strong>Status :</strong> {order.status}</p>
-                  {/* Add more order details as needed */}
+              orders.map((order) => (
+                <div key={order.id} className={styles.orderCard}>
+                  <div className={styles.orderHeader}>
+                    <span><strong>Commande #{order.id}</strong></span>
+                    <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                    <span className={styles.status}>{order.status}</span>
+                  </div>
+
+                  <div className={styles.orderItems}>
+                    {order.items.map((item) => (
+                      <div key={item.id} className={styles.orderItemRow}>
+                        <span>{item.quantity}x {item.product.name}</span>
+                        <span>{item.unitPrice} €</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={styles.orderTotal}>
+                    <strong>Total: {order.totalAmount} €</strong>
+                  </div>
                 </div>
               ))
             )}
